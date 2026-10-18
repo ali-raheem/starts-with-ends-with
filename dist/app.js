@@ -1,4 +1,4 @@
-import { ALPHABET, CATEGORIES, chooseRound, nextRotation, nextCategoryRotation } from './game.js?v=6';
+import { ALPHABET, CATEGORIES, chooseRound, nextRotation, nextCategoryRotation } from './game.js?v=7';
 const $ = id => document.getElementById(id);
 let round = 0, spinning = false, active = false, currentPair = { start: 'S', end: 'T', word: 'sunset', category: 'Nature' };
 let clockFrame, deadline = 0, audioContext, deferredInstall, answerTimer;

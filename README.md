@@ -20,7 +20,7 @@ Open http://localhost:5173. Use `PORT=8080 npm start` to change the port. The de
 - **All letters** chooses a category and letters from all 26 × 26 combinations, respecting locks. Some combinations have no ordinary English answer.
 - The dials spin as soon as the page loads, so a pull-to-refresh on a phone starts a new round. After that, click **Spin again**, or press **Space** outside a form control. The purple category dial is on the left and settles first, followed by the orange starting letter, then the green ending letter. On phones, the category sits above the two letters. The ring markers agree with the displayed result.
 - **Tap a dial** to lock its value while the others spin; tap again to unlock. Locking all three disables spinning until one is unlocked. If friendly mode has no known word for the locks, it asks you to unlock a dial or change mode.
-- **Got a word!** ends a round. **Need a word?** reveals an example, ending the race. All-letters mode explains when no example is available.
+- **Give up** ends a round. If there is an example word, it pops up with the answer and the next round spins after four seconds; otherwise (often in All letters mode) the next round spins straight away.
 - Optional sound is generated locally, and a 30-second timer starts only after all unlocked dials settle. Time continues to pass in a background tab. In friendly mode, when time runs out a popup shows an answer and the next round spins after four seconds; **Stay on this round** or Esc cancels the automatic spin.
 - Settings persist when browser storage is available. Scores and dictionary adjudication are left to players.
 

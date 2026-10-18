@@ -1,4 +1,4 @@
-import { ALPHABET, CATEGORIES, chooseRound, nextRotation, nextCategoryRotation } from './game.js?v=8';
+import { ALPHABET, CATEGORIES, chooseRound, nextRotation, nextCategoryRotation } from './game.js?v=9';
 const $ = id => document.getElementById(id);
 let round = 0, spinning = false, active = false, currentPair = { start: 'S', end: 'T', word: 'sunset', category: 'Nature' };
 let clockFrame, deadline = 0, audioContext, deferredInstall, answerTimer;
@@ -72,10 +72,10 @@ function updateClock() {
   $('timer-count').textContent = Math.ceil(remaining / 1000) + 's';
   if (remaining === 0) {
     active = false;
-    $('got-word').hidden = true;
+    $('give-up').hidden = true;
     tone(220, .4);
-    if (settings.mode === 'friendly' && currentPair.word) showAnswer();
-    else $('prompt').textContent = 'Time’s up! Reveal a word or give it another spin.';
+    if (settings.mode === 'friendly' && currentPair.word) showAnswer('TIME’S UP');
+    else $('prompt').textContent = 'Time’s up! Spin again when you’re ready.';
   } else clockFrame = requestAnimationFrame(updateClock);
 }
 function startClock() {
@@ -117,8 +117,8 @@ async function spin() {
   spinning = true; active = false; stopClock(); unlockAudio();
   currentPair = nextPair;
   updateLocks(); $('mode').disabled = true; $('timer-toggle').disabled = true;
-  $('got-word').hidden = true; $('hint-button').hidden = true; $('keyboard-hint').hidden = false; $('timer-bar').hidden = true;
-  $('prompt').textContent = 'Category first. Then the letters. Get ready…';
+  $('give-up').hidden = true; $('keyboard-hint').hidden = false; $('timer-bar').hidden = true;
+  $('prompt').textContent = ''; $('announce').textContent = '';
   document.querySelector('.game').classList.add('spinning');
   const turns = [
     { key:'category', from:categoryRotation, to:nextCategoryRotation(categoryRotation, currentPair.category, 3), label:'category-name', value:currentPair.category, duration:1400 },
@@ -151,30 +151,21 @@ async function spin() {
   if (!locks.category) categoryRotation = turns[0].to % 360;
   round++; spinning = false; active = true;
   $('round-label').textContent = `ROUND ${String(round).padStart(2, '0')}`;
-  $('prompt').replaceChildren(Object.assign(document.createElement('strong'), {textContent:currentPair.category}), document.createTextNode('. Starts with '), Object.assign(document.createElement('strong'), {textContent:currentPair.start}), document.createTextNode('. Ends with '), Object.assign(document.createElement('strong'), {textContent:currentPair.end}), document.createTextNode('. Go!'));
+  $('announce').textContent = `${currentPair.category}. Starts with ${currentPair.start}. Ends with ${currentPair.end}.`;
   updateLocks(); $('mode').disabled = false; $('timer-toggle').disabled = false;
-  $('got-word').hidden = false; $('hint-button').hidden = false; $('keyboard-hint').hidden = true;
+  $('give-up').hidden = false; $('keyboard-hint').hidden = true;
   document.querySelector('.game').classList.remove('spinning');
   tone(660, .18); startClock();
 }
 $('spin-button').addEventListener('click', spin);
-$('got-word').addEventListener('click', () => {
+// Giving up reveals an example when there is one; otherwise it moves straight on.
+$('give-up').addEventListener('click', () => {
   if (!active) return;
-  active = false; stopClock();
-  $('prompt').textContent = 'Nicely done! First valid word takes the round.';
-  $('got-word').hidden = true; tone(880, .2);
+  active = false; stopClock(); $('give-up').hidden = true;
+  if (currentPair.word) showAnswer('YOU GAVE UP'); else spin();
 });
-$('hint-button').addEventListener('click', () => {
-  active = false; stopClock(); $('got-word').hidden = true;
-  $('prompt').replaceChildren();
-  if (currentPair.word) {
-    $('prompt').append('One word is ', Object.assign(document.createElement('strong'), {textContent:currentPair.word}), ` (${currentPair.category.toLowerCase()}). Ready for another?`);
-  } else $('prompt').textContent = 'No example in this category. This combination may be impossible — spin again!';
-  $('hint-button').hidden = true;
-});
-function showAnswer() {
-  $('hint-button').hidden = true;
-  $('prompt').replaceChildren('Time’s up! One word is ', Object.assign(document.createElement('strong'), {textContent:currentPair.word}), '.');
+function showAnswer(reason) {
+  $('answer-reason').textContent = reason;
   $('answer-word').textContent = currentPair.word;
   $('answer-detail').textContent = `${currentPair.category} · starts with ${currentPair.start}, ends with ${currentPair.end}`;
   let left = 4;

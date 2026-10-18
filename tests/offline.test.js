@@ -12,7 +12,7 @@ function harness() {
     caches: {
       open:async () => ({ addAll:async paths => { for (const path of paths) entries.set(path, {path}); } }),
       match:async req => entries.get(typeof req === 'string' ? req : (new URL(req.url).pathname + new URL(req.url).search).replace('/', './')),
-      keys:async () => ['swew-v1', 'swew-v6', 'swew-v7', 'another-app'],
+      keys:async () => ['swew-v1', 'swew-v7', 'swew-v8', 'another-app'],
       delete:async key => deleted.push(key)
     },
     fetch:async () => { if (!network) throw new Error('Offline'); return {network:true}; }
@@ -24,15 +24,15 @@ async function event(handler) { let pending; handler({waitUntil:promise => pendi
 test('offline installation includes all existing local runtime assets', async () => {
   const h = harness(); await event(h.handlers.install);
   for (const asset of h.entries.keys()) assert.ok((await stat(new URL('../dist/' + (asset === './' ? 'index.html' : asset.slice(2)), import.meta.url))).isFile());
-  for (const required of ['./index.html', './app.js?v=7', './game.js?v=7', './styles.css?v=7', './manifest.webmanifest']) assert.ok(h.entries.has(required));
+  for (const required of ['./index.html', './app.js?v=8', './game.js?v=8', './styles.css?v=8', './manifest.webmanifest']) assert.ok(h.entries.has(required));
 });
 test('activation only removes this game’s old caches and claims clients', async () => {
   const h = harness(); await event(h.handlers.activate);
-  assert.deepEqual(h.deleted, ['swew-v1', 'swew-v6']); assert.equal(h.claimed(), true);
+  assert.deepEqual(h.deleted, ['swew-v1', 'swew-v7']); assert.equal(h.claimed(), true);
 });
 test('offline navigation and module requests use the installed copy', async () => {
   const h = harness(); await event(h.handlers.install); h.setOffline();
-  for (const [path, mode, expected] of [['/', 'navigate', './index.html'], ['/app.js?v=7', 'cors', './app.js?v=7'], ['/game.js?v=7', 'cors', './game.js?v=7']]) {
+  for (const [path, mode, expected] of [['/', 'navigate', './index.html'], ['/app.js?v=8', 'cors', './app.js?v=8'], ['/game.js?v=8', 'cors', './game.js?v=8']]) {
     let response;
     h.handlers.fetch({request:{method:'GET',url:'https://example.test' + path, mode},respondWith:p => response = p});
     assert.equal((await response).path, expected);

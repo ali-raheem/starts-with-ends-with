@@ -1,0 +1,47 @@
+# Starts With, Ends With
+
+A small, offline-capable word race for people around one screen. Spin the three marked dials, then be the first to shout a word that starts and ends with the selected letters and matches the category.
+
+## Run locally
+
+Requires Node.js 18 or newer; no packages to install.
+
+```sh
+npm start
+```
+
+Open http://localhost:5173. Use `PORT=8080 npm start` to change the port. The deployable app is the self-contained `dist/` directory; serve it over HTTPS for offline support on other devices. Opening `index.html` directly as a file does not support service workers or ES modules.
+
+## Play
+
+- **Friendly pairs** picks a category and letters with a known example word in that category, respecting locked dials. It avoids repeating the exact challenge when another valid round is available.
+- **All letters** chooses a category and letters from all 26 × 26 combinations, respecting locks. Some combinations have no ordinary English answer.
+- Click **Spin the dials**, or press **Space** outside a form control. The purple category dial is on the left and settles first, followed by the orange starting letter, then the green ending letter. On phones, the category sits above the two letters. The ring markers agree with the displayed result.
+- **Lock** on each dial holds its value while the others spin. Locking all three disables spinning until one is unlocked. If friendly mode has no known word for the locks, it asks you to unlock a dial or change mode.
+- **Got a word!** ends a round. **Need a word?** reveals an example, ending the race. All-letters mode explains when no example is available.
+- Optional sound is generated locally, and a 30-second timer starts only after all unlocked dials settle. Time continues to pass in a background tab.
+- Settings persist when browser storage is available. Scores and dictionary adjudication are left to players.
+
+## Offline and installation
+
+Visit once online and wait for **Offline ready**. All game code, styles, icons, and the word list are cached by the service worker. Reopening the same URL and playing then works without a connection. Clearing site storage removes the offline copy. HTTPS or localhost is required; private browsing and browser storage policies may prevent persistence.
+
+Install using the in-app button when supported, or the browser’s Add to Home Screen / Install menu. The game has no third-party fonts, requests, analytics, or runtime dependencies.
+
+Bump the cache name in `dist/sw.js` whenever changing app assets. The new service worker caches the full release before activation and removes only old `swew-` caches. Navigation tries the network and falls back to the cached page; game assets are served from cache.
+
+## Validation
+
+```sh
+npm test
+node --check dist/app.js
+node --check dist/sw.js
+```
+
+Automated unit checks cover example-word consistency, selection without immediate repeats, full all-letters coverage, exact dial alignment, all lock combinations, and category-specific example words. Service worker tests cover precaching real app files, offline navigation and modules, and safe cache cleanup. Browser QA could not run in the build environment because its process restrictions prevented Chromium from launching; rendered layout, timer interaction, and actual offline reload remain unverified in a real browser.
+
+## GitHub Pages
+
+The workflow in `.github/workflows/pages.yml` tests the app and deploys `dist/` after pushes to `main`, or on manual dispatch. In repository Settings → Pages, select **GitHub Actions** as the source before running the first deployment. It uses GitHub’s Pages environment and built-in token; no deployment secret is required.
+
+All asset, module, manifest, and service-worker paths are relative, so the game can be hosted at a repository URL such as `/starts-with-ends-with/`.

@@ -1,50 +1,5 @@
 export const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-// A deliberately small, hand-picked vocabulary keeps friendly rounds approachable.
-// Select pairs uniformly, rather than favouring the endings with the most words.
-const words = `acorn apple acrobat attic album anchor arrow artist arch autumn air ash apricot apex
-banana bread beach bird book bell blanket boat bloom berry box brush butter brick branch baby bus
-cabin cake cat cloud clock cup chair cow cheese coin coral cream chess candy comb city cliff cough
- dog dance dream desk duck door dish doll dragon diary drum dirt daisy dough dwarf
- eagle earth egg elbow elephant engine echo empty enjoy elf equip
- feather fish flower fork farm fox flame friend frog frost family film flash fruit fluff
- garden gate goat gold glass grape giant glow grass gem garlic graph gum galaxy golf
- hat house horse heart honey hill hug hammer hand hair hoop hollow half
- ice island insect ink iron igloo ivy item inch input
- jacket jam jelly jewel jump jog jaw jazz joy jug
- key kite kitchen king kayak kick knee ketchup knock kiwi
- lemon leaf lion lamp lake lunch light lamb laugh lily loaf loop
- moon mouse milk mint mountain map mushroom match mirror monkey mud music
- nest night nose noodle net napkin north nurse navy neck new
- orange ocean owl oak olive onion orbit otter open ox oath
- piano pear peach pencil plant park pig pocket paper pepper pink patch pillow proof
- queen quilt question quick quiz queue quest
- rabbit rain river rose rocket ring rock road roof rainbow rhythm ranch rugby
- sun star sunset seed sea sock stone sheep shell spoon snow smile scarf school salt soap squash
- tree table toast train tiger tulip tent tomato tooth towel truck torch toy taxi triumph
- umbrella uncle uniform unit update undo ugly upright use unzip
- van vase velvet village vine violin visit view verb very
- water window whale wolf wind world watch wish wax web worm warm worry
- xylophone xenon xylem xerox
- yarn yellow yoghurt year yes yet young yolk yawn
- zebra zero zip zinc zest zigzag zoo zoom`;
-export const PAIRS = [...words.split(/\s+/).reduce((map, word) => {
-  const key = word[0].toUpperCase() + word.at(-1).toUpperCase();
-  if (!map.has(key)) map.set(key, { start: key[0], end: key[1], word });
-  return map;
-}, new Map()).values()];
 export function randomIndex(length, rng = Math.random) { return Math.min(length - 1, Math.floor(rng() * length)); }
-export function choosePair(mode, previous, rng = Math.random) {
-  if (mode === 'wild') {
-    // Pick from the 675 remaining pairs, without a retry loop or repeat.
-    const previousIndex = previous ? ALPHABET.indexOf(previous.start) * 26 + ALPHABET.indexOf(previous.end) : -1;
-    let index = randomIndex(previousIndex >= 0 ? 675 : 676, rng);
-    if (previousIndex >= 0 && index >= previousIndex) index++;
-    const start = ALPHABET[Math.floor(index / 26)], end = ALPHABET[index % 26];
-    return { start, end, word: PAIRS.find(p => p.start === start && p.end === end)?.word ?? null };
-  }
-  const available = PAIRS.filter(p => !previous || p.start !== previous.start || p.end !== previous.end);
-  return available[randomIndex(available.length, rng)];
-}
 export function nextRotation(current, letter, turns = 4) {
   const target = (360 - ALPHABET.indexOf(letter) * 360 / 26) % 360;
   return current + turns * 360 + (target - current % 360 + 360) % 360;

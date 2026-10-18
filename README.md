@@ -1,6 +1,8 @@
 # Starts With, Ends With
 
-A small, offline-capable word race for people around one screen. Spin the three marked dials, then be the first to shout a word that starts and ends with the selected letters and matches the category.
+A small, offline-capable word race for people around one screen. Play it at https://ali-raheem.github.io/starts-with-ends-with/.
+
+Spin the three marked dials, then be the first to shout a word that starts and ends with the selected letters and matches the category.
 
 ## Run locally
 
@@ -38,7 +40,7 @@ node --check dist/app.js
 node --check dist/sw.js
 ```
 
-Automated unit checks cover example-word consistency, selection without immediate repeats, full all-letters coverage, exact dial alignment, all lock combinations, and category-specific example words. Service worker tests cover precaching real app files, offline navigation and modules, and safe cache cleanup. Browser QA could not run in the build environment because its process restrictions prevented Chromium from launching; rendered layout, timer interaction, and actual offline reload remain unverified in a real browser.
+Unit tests cover dial alignment, every lock combination, category-specific example words, and selection without immediate repeats. Service worker tests cover precaching real app files, offline navigation and modules, and safe cache cleanup.
 
 ## GitHub Pages
 

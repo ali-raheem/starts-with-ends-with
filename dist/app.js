@@ -1,7 +1,7 @@
-import { ALPHABET, CATEGORIES, chooseRound, nextRotation, nextCategoryRotation } from './game.js?v=4';
+import { ALPHABET, CATEGORIES, chooseRound, nextRotation, nextCategoryRotation } from './game.js?v=5';
 const $ = id => document.getElementById(id);
 let round = 0, spinning = false, active = false, currentPair = { start: 'S', end: 'T', word: 'sunset', category: 'Nature' };
-let clockFrame, deadline = 0, audioContext, deferredInstall, offlineReady = false;
+let clockFrame, deadline = 0, audioContext, deferredInstall;
 const locks = { category: false, start: false, end: false };
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
 let settings = { mode: 'friendly', timer: false, sound: false };
@@ -191,18 +191,11 @@ $('close-help').addEventListener('click', () => $('help-dialog').close());
 $('lets-play').addEventListener('click', () => $('help-dialog').close());
 $('help-dialog').addEventListener('click', event => { if (event.target === $('help-dialog')) { const rect = event.target.getBoundingClientRect(); if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) event.target.close(); } });
 document.addEventListener('visibilitychange', () => { if (!document.hidden && active && settings.timer) { stopClock(); updateClock(); } });
-function updateOfflineStatus() {
-  $('offline-status').classList.toggle('ready', offlineReady);
-  $('offline-status').querySelector('span').textContent = offlineReady ? (navigator.onLine ? 'Offline ready' : 'Playing offline') : (navigator.onLine ? 'Online play' : 'Offline copy unavailable');
-}
-window.addEventListener('online', updateOfflineStatus); window.addEventListener('offline', updateOfflineStatus);
 if ('serviceWorker' in navigator && window.isSecureContext) {
-  navigator.serviceWorker.register('./sw.js').then(() => navigator.serviceWorker.ready).then(() => { offlineReady = true; updateOfflineStatus(); }).catch(() => {
-    updateOfflineStatus();
+  navigator.serviceWorker.register('./sw.js').catch(() => {
     $('offline-help').textContent = 'Offline saving is unavailable in this browser session. Try a regular browser window over HTTPS (or localhost) and allow site storage.';
   });
 } else {
-  updateOfflineStatus();
   $('offline-help').textContent = 'This browser session cannot save an offline copy. Open the game over HTTPS (or localhost) in a browser with service worker support.';
 }
 window.addEventListener('beforeinstallprompt', event => { event.preventDefault(); deferredInstall = event; $('install-button').hidden = false; });
@@ -212,3 +205,5 @@ $('install-button').addEventListener('click', async () => {
   deferredInstall = null; $('install-button').hidden = true;
 });
 window.addEventListener('appinstalled', () => { deferredInstall = null; $('install-button').hidden = true; });
+// Every load starts a round, so a pull-to-refresh on a phone spins the dials.
+spin();

@@ -18,7 +18,7 @@ Open http://localhost:5173. Use `PORT=8080 npm start` to change the port. The de
 
 - **Friendly pairs** picks a category and letters with a known example word in that category, respecting locked dials. It avoids repeating the exact challenge when another valid round is available.
 - **All letters** chooses a category and letters from all 26 × 26 combinations, respecting locks. Some combinations have no ordinary English answer.
-- Click **Spin the dials**, or press **Space** outside a form control. The purple category dial is on the left and settles first, followed by the orange starting letter, then the green ending letter. On phones, the category sits above the two letters. The ring markers agree with the displayed result.
+- The dials spin as soon as the page loads, so a pull-to-refresh on a phone starts a new round. After that, click **Spin again**, or press **Space** outside a form control. The purple category dial is on the left and settles first, followed by the orange starting letter, then the green ending letter. On phones, the category sits above the two letters. The ring markers agree with the displayed result.
 - **Lock** on each dial holds its value while the others spin. Locking all three disables spinning until one is unlocked. If friendly mode has no known word for the locks, it asks you to unlock a dial or change mode.
 - **Got a word!** ends a round. **Need a word?** reveals an example, ending the race. All-letters mode explains when no example is available.
 - Optional sound is generated locally, and a 30-second timer starts only after all unlocked dials settle. Time continues to pass in a background tab.
@@ -26,7 +26,7 @@ Open http://localhost:5173. Use `PORT=8080 npm start` to change the port. The de
 
 ## Offline and installation
 
-Visit once online and wait for **Offline ready**. All game code, styles, icons, and the word list are cached by the service worker. Reopening the same URL and playing then works without a connection. Clearing site storage removes the offline copy. HTTPS or localhost is required; private browsing and browser storage policies may prevent persistence.
+Visit once online; the service worker saves a copy in the background. All game code, styles, icons, and the word list are cached by the service worker. Reopening the same URL and playing then works without a connection. Clearing site storage removes the offline copy. HTTPS or localhost is required; private browsing and browser storage policies may prevent persistence.
 
 Install using the in-app button when supported, or the browser’s Add to Home Screen / Install menu. The game has no third-party fonts, requests, analytics, or runtime dependencies.
 

@@ -1,7 +1,7 @@
-import { ALPHABET, CATEGORIES, chooseRound, nextRotation, nextCategoryRotation } from './game.js?v=5';
+import { ALPHABET, CATEGORIES, chooseRound, nextRotation, nextCategoryRotation } from './game.js?v=6';
 const $ = id => document.getElementById(id);
 let round = 0, spinning = false, active = false, currentPair = { start: 'S', end: 'T', word: 'sunset', category: 'Nature' };
-let clockFrame, deadline = 0, audioContext, deferredInstall;
+let clockFrame, deadline = 0, audioContext, deferredInstall, answerTimer;
 const locks = { category: false, start: false, end: false };
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
 let settings = { mode: 'friendly', timer: false, sound: false };
@@ -61,7 +61,7 @@ function showSettings() {
   $('sound-button').setAttribute('aria-label', `Turn sound ${settings.sound ? 'off' : 'on'}`);
   $('sound-button').querySelector('span').textContent = `Sound ${settings.sound ? 'on' : 'off'}`;
   $('sound-button').querySelector('path').setAttribute('d', settings.sound ? 'M11 5 6 9H3v6h3l5 4zM15 8q6 4 0 8M18 5q9 7 0 14' : 'M11 5 6 9H3v6h3l5 4zM16 9l5 6M21 9l-5 6');
-  $('mode-description').textContent = settings.mode === 'friendly' ? 'Every round has a word in its category.' : 'Any letters + a category. Stuck? Spin again.';
+  $('mode-description').textContent = settings.mode === 'friendly' ? 'Every round has a word in its category. Tap a dial to lock it.' : 'Any letters + a category. Tap a dial to lock it.';
 }
 showSettings();
 function stopClock() { cancelAnimationFrame(clockFrame); clockFrame = null; }
@@ -73,8 +73,9 @@ function updateClock() {
   if (remaining === 0) {
     active = false;
     $('got-word').hidden = true;
-    $('prompt').textContent = 'Time’s up! Reveal a word or give it another spin.';
     tone(220, .4);
+    if (settings.mode === 'friendly' && currentPair.word) showAnswer();
+    else $('prompt').textContent = 'Time’s up! Reveal a word or give it another spin.';
   } else clockFrame = requestAnimationFrame(updateClock);
 }
 function startClock() {
@@ -91,12 +92,7 @@ async function turnWheel(id, from, to, duration) {
 }
 function updateLocks() {
   for (const key of Object.keys(locks)) {
-    const button = $('lock-' + key);
-    button.setAttribute('aria-pressed', String(locks[key]));
-    button.setAttribute('aria-label', `${locks[key] ? 'Unlock' : 'Lock'} ${key === 'category' ? 'category' : key + ' letter'}`);
-    button.querySelector('span').textContent = locks[key] ? 'Locked' : 'Lock';
-    button.querySelector('.lock-shackle').setAttribute('d', locks[key] ? 'M8 10V7a4 4 0 0 1 8 0v3' : 'M8 10V7a4 4 0 0 1 8 0');
-    button.disabled = spinning;
+    $(key + '-dial').setAttribute('aria-pressed', String(locks[key]));
     $(key + '-dial').classList.toggle('locked', locks[key]);
   }
   const allLocked = Object.values(locks).every(Boolean);
@@ -104,7 +100,7 @@ function updateLocks() {
   $('spin-button').querySelector('span').textContent = spinning ? 'Spinning…' : allLocked ? 'Unlock a dial to spin' : round ? 'Spin again' : 'Spin the dials';
 }
 for (const key of Object.keys(locks)) {
-  $('lock-' + key).addEventListener('click', () => {
+  $(key + '-dial').addEventListener('click', () => {
     if (spinning) return;
     locks[key] = !locks[key];
     updateLocks();
@@ -112,7 +108,7 @@ for (const key of Object.keys(locks)) {
 }
 updateLocks();
 async function spin() {
-  if (spinning || Object.values(locks).every(Boolean) || $('help-dialog').open) return;
+  if (spinning || Object.values(locks).every(Boolean) || document.querySelector('dialog[open]')) return;
   const nextPair = chooseRound(settings.mode, currentPair, Math.random, locks);
   if (!nextPair) {
     $('prompt').textContent = 'No word in our list fits these locks. Unlock a dial or try All letters.';
@@ -175,6 +171,25 @@ $('hint-button').addEventListener('click', () => {
     $('prompt').append('One word is ', Object.assign(document.createElement('strong'), {textContent:currentPair.word}), ` (${currentPair.category.toLowerCase()}). Ready for another?`);
   } else $('prompt').textContent = 'No example in this category. This combination may be impossible — spin again!';
   $('hint-button').hidden = true;
+});
+function showAnswer() {
+  $('hint-button').hidden = true;
+  $('prompt').replaceChildren('Time’s up! One word is ', Object.assign(document.createElement('strong'), {textContent:currentPair.word}), '.');
+  $('answer-word').textContent = currentPair.word;
+  $('answer-detail').textContent = `${currentPair.category} · starts with ${currentPair.start}, ends with ${currentPair.end}`;
+  let left = 4;
+  const count = () => { $('answer-countdown').textContent = `Next spin in ${left}s`; };
+  count();
+  $('answer-dialog').returnValue = '';
+  $('answer-dialog').showModal();
+  answerTimer = setInterval(() => { if (--left > 0) count(); else $('answer-dialog').close('next'); }, 1000);
+}
+$('next-round').addEventListener('click', () => $('answer-dialog').close('next'));
+$('stay-round').addEventListener('click', () => $('answer-dialog').close());
+// Closing with Esc or "Stay on this round" pauses; the countdown or "Spin now" moves on.
+$('answer-dialog').addEventListener('close', () => {
+  clearInterval(answerTimer);
+  if ($('answer-dialog').returnValue === 'next') spin();
 });
 $('mode').addEventListener('change', () => { settings.mode = $('mode').value; saveSettings(); showSettings(); });
 $('timer-toggle').addEventListener('click', () => {

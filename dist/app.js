@@ -1,4 +1,4 @@
-import { ALPHABET, CATEGORIES, chooseRound, nextRotation, nextCategoryRotation } from './game.js?v=9';
+import { ALPHABET, CATEGORIES, chooseRound, nextRotation, nextCategoryRotation } from './game.js?v=10';
 const $ = id => document.getElementById(id);
 let round = 0, spinning = false, active = false, currentPair = { start: 'S', end: 'T', word: 'sunset', category: 'Nature' };
 let clockFrame, deadline = 0, audioContext, deferredInstall, answerTimer;
@@ -64,6 +64,12 @@ function showSettings() {
   $('mode-description').textContent = settings.mode === 'friendly' ? 'Every round has a word in its category. Tap a dial to lock it.' : 'Any letters + a category. Tap a dial to lock it.';
 }
 showSettings();
+// Keep the bar in the layout between rounds so the spin button never jumps.
+function fillTimerBar() {
+  $('timer-bar').hidden = !settings.timer;
+  $('timer-fill').style.transform = 'scaleX(1)';
+  $('timer-count').textContent = '30s';
+}
 function stopClock() { cancelAnimationFrame(clockFrame); clockFrame = null; }
 function updateClock() {
   if (!active || !settings.timer) return;
@@ -117,7 +123,7 @@ async function spin() {
   spinning = true; active = false; stopClock(); unlockAudio();
   currentPair = nextPair;
   updateLocks(); $('mode').disabled = true; $('timer-toggle').disabled = true;
-  $('give-up').hidden = true; $('keyboard-hint').hidden = false; $('timer-bar').hidden = true;
+  $('give-up').hidden = true; $('keyboard-hint').hidden = false; fillTimerBar();
   $('prompt').textContent = ''; $('announce').textContent = '';
   document.querySelector('.game').classList.add('spinning');
   const turns = [
@@ -185,7 +191,7 @@ $('answer-dialog').addEventListener('close', () => {
 $('mode').addEventListener('change', () => { settings.mode = $('mode').value; saveSettings(); showSettings(); });
 $('timer-toggle').addEventListener('click', () => {
   settings.timer = !settings.timer; saveSettings(); showSettings();
-  stopClock(); $('timer-bar').hidden = true;
+  stopClock(); fillTimerBar();
   if (active) startClock();
 });
 $('sound-button').addEventListener('click', () => { settings.sound = !settings.sound; saveSettings(); showSettings(); unlockAudio(); tone(660, .12); });

@@ -1,5 +1,5 @@
-const CACHE = 'swew-v9';
-const ASSETS = ['./', './index.html', './styles.css?v=9', './app.js?v=9', './game.js?v=9', './manifest.webmanifest', './icon.svg', './icon-192.png', './icon-512.png'];
+const CACHE = 'swew-v10';
+const ASSETS = ['./', './index.html', './styles.css?v=10', './app.js?v=10', './game.js?v=10', './manifest.webmanifest', './icon.svg', './icon-192.png', './icon-512.png'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS)).then(() => self.skipWaiting()));
 });
